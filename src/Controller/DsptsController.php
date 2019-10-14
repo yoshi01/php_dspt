@@ -3,6 +3,7 @@ namespace App\Controller;
 
 use App\Controller\AppController;
 use App\Lib\Adapter\DisplaySourceFileImpl;
+use App\Lib\Factory\ReaderFactory;
 use App\Lib\Singleton\SingletonSample;
 use App\Lib\Template\ListDisplay;
 use App\Lib\Template\TableDisplay;
@@ -71,5 +72,14 @@ class DsptsController extends AppController
         $showFile = new DisplaySourceFileImpl(APP . 'Lib/Adapter/ShowFile.php');
         $showFile->display();
         exit;
+    }
+
+    public function factory()
+    {
+        $filename = 'test.xml';
+        $factory = new ReaderFactory();
+        $data = $factory->create($filename);
+        $data->read();
+        $data->display();
     }
 }
