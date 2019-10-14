@@ -2,6 +2,8 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use App\Lib\Adapter\DisplaySourceFileImpl;
+use App\Lib\Singleton\SingletonSample;
 use App\Lib\Template\ListDisplay;
 use App\Lib\Template\TableDisplay;
 use Cake\Event\Event;
@@ -39,6 +41,35 @@ class DsptsController extends AppController
         $display1->display();
         echo '<hr>';
         $display2->display();
+        exit;
+    }
+
+    public function singleton()
+    {
+        $instance1 = SingletonSample::getInstance();
+        $instance2 = SingletonSample::getInstance();
+
+        echo '<hr>';
+
+        echo 'instance ID : ' . $instance1->getID() . '<br>';
+        echo '$instance1->getID() === $instance2->getID() : ' . ($instance1->getID() === $instance2->getID() ? 'true' : 'false');
+        echo '<hr>';
+
+        echo '$instance1 === $instance2 : ' . ($instance1 === $instance2 ? 'true' : 'false');
+        echo '<hr>';
+
+        try {
+            $instance1_clone = clone $instance1;
+        } catch (\Exception $e) {
+            debug($e->getMessage());
+        }
+        exit;
+    }
+
+    public function adapter()
+    {
+        $showFile = new DisplaySourceFileImpl(APP . 'Lib/Adapter/ShowFile.php');
+        $showFile->display();
         exit;
     }
 }
