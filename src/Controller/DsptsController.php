@@ -3,6 +3,10 @@ namespace App\Controller;
 
 use App\Controller\AppController;
 use App\Lib\Adapter\DisplaySourceFileImpl;
+use App\Lib\Facade\ItemDao;
+use App\Lib\Facade\Order;
+use App\Lib\Facade\OrderItem;
+use App\Lib\Facade\OrderManager;
 use App\Lib\Factory\ReaderFactory;
 use App\Lib\Singleton\SingletonSample;
 use App\Lib\Template\ListDisplay;
@@ -81,5 +85,17 @@ class DsptsController extends AppController
         $data = $factory->create($filename);
         $data->read();
         $data->display();
+        exit;
+    }
+
+    public function facade()
+    {
+        $order = new Order();
+        $order->addItem(new OrderItem(ItemDao::getInstance()->findById(1), 2));
+        $order->addItem(new OrderItem(ItemDao::getInstance()->findById(2), 1));
+        $order->addItem(new OrderItem(ItemDao::getInstance()->findById(3), 3));
+
+        OrderManager::order($order);
+        exit;
     }
 }
