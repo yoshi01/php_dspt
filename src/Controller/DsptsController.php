@@ -8,6 +8,9 @@ use App\Lib\Facade\Order;
 use App\Lib\Facade\OrderItem;
 use App\Lib\Facade\OrderManager;
 use App\Lib\Factory\ReaderFactory;
+use App\Lib\Iterator\Employee;
+use App\Lib\Iterator\Employees;
+use App\Lib\Iterator\SalesmanIterator;
 use App\Lib\Singleton\SingletonSample;
 use App\Lib\Template\ListDisplay;
 use App\Lib\Template\TableDisplay;
@@ -97,5 +100,58 @@ class DsptsController extends AppController
 
         OrderManager::order($order);
         exit;
+    }
+
+    public function iterator()
+    {
+        $employees = new Employees();
+        $employees->add(new Employee('SMITH', 32, 'CLERK'));
+        $employees->add(new Employee('ALLEN', 26, 'SALESMAN'));
+        $employees->add(new Employee('MARTIN', 50, 'SALESMAN'));
+        $employees->add(new Employee('CLARK', 45, 'MANAGER'));
+        $employees->add(new Employee('KING', 58, 'PRESIDENT'));
+        $iterator = $employees->getIterator();
+        /**
+         * iteratorのメソッドを利用する
+         */
+        echo '<ul>';
+        while ($iterator->valid()) {
+            $employee = $iterator->current();
+            printf('<li>%s (%d, %s)</li>',
+                $employee->getName(),
+                $employee->getAge(),
+                $employee->getJob());
+
+            $iterator->next();
+        }
+        echo '</ul>';
+        echo '<hr>';
+
+        /**
+         * foreach文を利用する
+         */
+        $this->dumpWithForeach($iterator);
+
+        /**
+         * 異なるiteratorで要素を取得する
+         */
+        $this->dumpWithForeach(new SalesmanIterator($iterator));
+        exit;
+    }
+
+    /**
+     * @param \Iterator $iterator
+     */
+    private function dumpWithForeach(\Iterator $iterator)
+    {
+        echo '<ul>';
+        foreach ($iterator as $employee) {
+            printf('<li>%s (%d, %s)</li>',
+                $employee->getName(),
+                $employee->getAge(),
+                $employee->getJob());
+        }
+        echo '</ul>';
+        echo '<hr>';
     }
 }
