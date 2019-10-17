@@ -11,6 +11,10 @@ use App\Lib\Bridge\Listing;
 use App\Lib\Builder\News;
 use App\Lib\Builder\NewsDirector;
 use App\Lib\Builder\RssNewsBuilder;
+use App\Lib\ChainOfRepository\AlphabetValidationHandler;
+use App\Lib\ChainOfRepository\MaxLengthValidationHandler;
+use App\Lib\ChainOfRepository\NotNullValidationHandler;
+use App\Lib\ChainOfRepository\NumberValidationHandler;
 use App\Lib\Facade\ItemDao;
 use App\Lib\Facade\Order;
 use App\Lib\Facade\OrderItem;
@@ -235,6 +239,36 @@ class DsptsController extends AppController
                 $article->getUrl(),
                 htmlspecialchars($article->getTitle(), ENT_QUOTES, mb_internal_encoding())
             );
+        }
+        exit;
+    }
+
+    public function chainOfRepository($validation_type = null, $input = null)
+    {
+        $not_null_handler = new NotNullValidationHandler();
+        $length_handler = new MaxLengthValidationHandler(8);
+        switch ($validation_type) {
+            case 1:
+                $option_handler = new AlphabetValidationHandler();
+                break;
+            case 2:
+                $option_handler = new NumberValidationHandler();
+                break;
+        }
+
+        $length_handler->setHandler($option_handler);
+        $handler = $not_null_handler->setHandler($length_handler);
+
+        /**
+         * 処理実行と結果メッセージの表示
+         */
+        $result = $handler->validate($input);
+        if ($result === false) {
+            echo '検証できませんでした';
+        } elseif (is_string($result) && $result !== '') {
+            echo '<p style="color: #dd0000;">' . $result . '</p>';
+        } else {
+            echo '<p style="color: #008800;">OK</p>';
         }
         exit;
     }
