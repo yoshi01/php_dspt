@@ -5,6 +5,9 @@ use App\Controller\AppController;
 use App\Lib\AbstractFactory\DbFactory;
 use App\Lib\AbstractFactory\MockFactory;
 use App\Lib\Adapter\DisplaySourceFileImpl;
+use App\Lib\Bridge\ExtendedListing;
+use App\Lib\Bridge\FileDataSource;
+use App\Lib\Bridge\Listing;
 use App\Lib\Facade\ItemDao;
 use App\Lib\Facade\Order;
 use App\Lib\Facade\OrderItem;
@@ -191,5 +194,29 @@ class DsptsController extends AppController
         exit;
 
 
+    }
+
+    public function bridge()
+    {
+        $list1 = new Listing(new FileDataSource(APP . 'Lib/Bridge/data.txt'));
+        $list2 = new ExtendedListing(new FileDataSource(APP . 'Lib/Bridge/data.txt'));
+
+        try {
+            $list1->oepn();
+            $list2->oepn();
+        } catch (\Exception $e) {
+            die($e->getMessage());
+        }
+
+        $data = $list1->read();
+        echo $data;
+
+        $data = $list2->readWithEncode();
+        echo $data;
+
+        $list1->close();
+        $list2->close();
+
+        exit;
     }
 }
