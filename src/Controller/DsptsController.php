@@ -8,6 +8,9 @@ use App\Lib\Adapter\DisplaySourceFileImpl;
 use App\Lib\Bridge\ExtendedListing;
 use App\Lib\Bridge\FileDataSource;
 use App\Lib\Bridge\Listing;
+use App\Lib\Builder\News;
+use App\Lib\Builder\NewsDirector;
+use App\Lib\Builder\RssNewsBuilder;
 use App\Lib\Facade\ItemDao;
 use App\Lib\Facade\Order;
 use App\Lib\Facade\OrderItem;
@@ -217,6 +220,22 @@ class DsptsController extends AppController
         $list1->close();
         $list2->close();
 
+        exit;
+    }
+
+    public function builder()
+    {
+        $builder = new RssNewsBuilder();
+        $url = 'https://pear.php.net/feeds/latest.rss';
+
+        $director = new NewsDirector($builder, $url);
+        foreach ($director->getNews() as $article) {
+            printf('<li>[%s] <a href="%s">%s</a></li>',
+                $article->getData(),
+                $article->getUrl(),
+                htmlspecialchars($article->getTitle(), ENT_QUOTES, mb_internal_encoding())
+            );
+        }
         exit;
     }
 }
