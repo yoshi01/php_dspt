@@ -28,6 +28,8 @@ use App\Lib\Facade\Order;
 use App\Lib\Facade\OrderItem;
 use App\Lib\Facade\OrderManager;
 use App\Lib\Factory\ReaderFactory;
+use App\Lib\FlyWeight\Item;
+use App\Lib\FlyWeight\ItemFactory;
 use App\Lib\Iterator\Employee;
 use App\Lib\Iterator\Employees;
 use App\Lib\Iterator\SalesmanIterator;
@@ -106,8 +108,8 @@ class DsptsController extends AppController
     public function factory()
     {
         $filename = 'test.xml';
-        $factory = new ReaderFactory();
-        $data = $factory->create($filename);
+        $factory  = new ReaderFactory();
+        $data     = $factory->create($filename);
         $data->read();
         $data->display();
         exit;
@@ -194,14 +196,14 @@ class DsptsController extends AppController
                 throw new \RuntimeException('invalid factory');
         }
 
-        $item_id = 1;
+        $item_id  = 1;
         $item_dao = $factory->createItemDao();
-        $item = $item_dao->findById($item_id);
+        $item     = $item_dao->findById($item_id);
         echo 'ID=' . $item_id . 'の商品は「' . $item->getName() . '」です<br>';
 
-        $order_id = 3;
+        $order_id  = 3;
         $order_dao = $factory->createOrderDao();
-        $order = $order_dao->findById($order_id);
+        $order     = $order_dao->findById($order_id);
         echo 'ID=' . $order_id . 'の注文情報は次の通りです。';
         echo '<ul>';
         foreach ($order->getItems() as $item) {
@@ -240,7 +242,7 @@ class DsptsController extends AppController
     public function builder()
     {
         $builder = new RssNewsBuilder();
-        $url = 'https://pear.php.net/feeds/latest.rss';
+        $url     = 'https://pear.php.net/feeds/latest.rss';
 
         $director = new NewsDirector($builder, $url);
         foreach ($director->getNews() as $article) {
@@ -256,7 +258,7 @@ class DsptsController extends AppController
     public function chainOfRepository($validation_type = null, $input = null)
     {
         $not_null_handler = new NotNullValidationHandler();
-        $length_handler = new MaxLengthValidationHandler(8);
+        $length_handler   = new MaxLengthValidationHandler(8);
         switch ($validation_type) {
             case 1:
                 $option_handler = new AlphabetValidationHandler();
@@ -285,7 +287,7 @@ class DsptsController extends AppController
 
     public function command()
     {
-        $q = new Queue();
+        $q    = new Queue();
         $file = new File('sample.txt');
         $q->addCommand(new TouchCommand($file));
         $q->addCommand(new CompressCommand($file));
@@ -346,5 +348,30 @@ class DsptsController extends AppController
             $text = h($text_object->getText()) . "<br>";
         }
         $this->set('text', $text);
+    }
+
+    public function flyWeight()
+    {
+        $factory = ItemFactory::getInstance(APP . 'Lib/FlyWeight/data.txt');
+
+        $items = [];
+        $items[] = $factory->getItem('ABC0001');
+        $items[] = $factory->getItem('ABC0002');
+        $items[] = $factory->getItem('ABC0003');
+
+        if ($items[0] === $factory->getItem('ABC0001')) {
+            echo '同一のオブジェクトです';
+        } else {
+            echo '同一のオブジェクトではありません';
+        }
+
+        echo '<dl>';
+        foreach ($items as $object) {
+            echo '<dt>' . htmlspecialchars($object->getName(), ENT_QUOTES, mb_internal_encoding()) . '</dt>';
+            echo '<dd>商品番号：' . $object->getCode() . '</dd>';
+            echo '<dd>\\' . number_format((int)$object->getPrice()) . '-</dd>';
+        }
+        echo '</dl>';
+        exit;
     }
 }
