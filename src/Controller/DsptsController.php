@@ -37,6 +37,8 @@ use App\Lib\Iterator\Employees;
 use App\Lib\Iterator\SalesmanIterator;
 use App\Lib\Mediator\Chatroom;
 use App\Lib\Mediator\User;
+use App\Lib\Memento\Data;
+use App\Lib\Memento\DataCaretaker;
 use App\Lib\Singleton\SingletonSample;
 use App\Lib\Template\ListDisplay;
 use App\Lib\Template\TableDisplay;
@@ -415,6 +417,44 @@ class DsptsController extends AppController
         $yoshida->sendMessage('萩原', '元気ですか？') ;
         $tajima->sendMessage('佐々木', 'お邪魔してます') ;
         $kawamura->sendMessage('吉田', '私事で恐縮ですが…') ;
+        exit;
+    }
+
+    public function memento($mode = null, $comment = null)
+    {
+        $caretaker = new DataCaretaker();
+        $data = $_SESSION['data'] ?? new Data();
+
+        switch ($mode) {
+            case 'add':
+                $data->addComment($comment ?? '');
+                break;
+            case 'save':
+                $caretaker->setSnapshot($data->takeSnapshot());
+                echo '<font style="color: #dd0000;">データを保存しました。</font><br>';
+                break;
+            case 'restore':
+                $data->restoreSnapshot($caretaker->getSnapshot());
+                echo '<font style="color: #00aa00;">データを復元しました。</font><br>';
+                break;
+            case 'clear':
+                $data = new Data();
+        }
+
+        /**
+         * 登録したコメントを表示する
+         */
+        echo '今までのコメント';
+        if (!is_null($data)) {
+            echo '<ol>';
+            foreach ($data->getComment() as $comment) {
+                echo '<li>'
+                    . htmlspecialchars($comment, ENT_QUOTES, mb_internal_encoding())
+                    . '</li>';
+            }
+            echo '</ol>';
+        }
+        $_SESSION['data'] = $data;
         exit;
     }
 }
