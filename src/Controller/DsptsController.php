@@ -20,6 +20,9 @@ use App\Lib\Command\CopyCommand;
 use App\Lib\Command\File;
 use App\Lib\Command\Queue;
 use App\Lib\Command\TouchCommand;
+use App\Lib\Decorator\DoubleByteText;
+use App\Lib\Decorator\PlainText;
+use App\Lib\Decorator\UpperCaseText;
 use App\Lib\Facade\ItemDao;
 use App\Lib\Facade\Order;
 use App\Lib\Facade\OrderItem;
@@ -31,6 +34,8 @@ use App\Lib\Iterator\SalesmanIterator;
 use App\Lib\Singleton\SingletonSample;
 use App\Lib\Template\ListDisplay;
 use App\Lib\Template\TableDisplay;
+use App\Lib\Composite\Employee as Emp;
+use App\Lib\Composite\Group;
 use Cake\Event\Event;
 
 /**
@@ -288,5 +293,58 @@ class DsptsController extends AppController
 
         $q->run();
         exit;
+    }
+
+    public function composite()
+    {
+        $root_entry = new Group("001", "本社");
+        $root_entry->add(new Emp("00101", "CEO"));
+        $root_entry->add(new Emp("00102", "CTO"));
+
+        $group1 = new Group("010", "○○支店");
+        $group1->add(new Emp("01001", "支店長"));
+        $group1->add(new Emp("01002", "佐々木"));
+        $group1->add(new Emp("01003", "鈴木"));
+        $group1->add(new Emp("01003", "吉田"));
+
+        $group2 = new Group("110", "△△営業所");
+        $group2->add(new Emp("11001", "川村"));
+        $group1->add($group2);
+        $root_entry->add($group1);
+
+        $group3 = new Group("020", "××支店");
+        $group3->add(new Emp("02001", "萩原"));
+        $group3->add(new Emp("02002", "田島"));
+        $group3->add(new Emp("02002", "白井"));
+        $root_entry->add($group3);
+
+        $root_entry->dump();
+        exit;
+    }
+
+    public function decorator()
+    {
+        $data     = $this->request->getData();
+        $text     = $data['text'] ?? '';
+        $decorate = $data['decorator'] ?? [];
+        if ($text !== '') {
+            $text_object = new PlainText();
+            $text_object->setText($text);
+
+            foreach ($decorate as $k => $val) {
+                switch ($val) {
+                    case 'double':
+                        $text_object = new DoubleByteText($text_object);
+                        break;
+                    case 'upper':
+                        $text_object = new UpperCaseText($text_object);
+                        break;
+                    default:
+                        throw new \RuntimeException('invalid decorator');
+                }
+            }
+            $text = h($text_object->getText()) . "<br>";
+        }
+        $this->set('text', $text);
     }
 }
