@@ -30,6 +30,8 @@ use App\Lib\Facade\OrderManager;
 use App\Lib\Factory\ReaderFactory;
 use App\Lib\FlyWeight\Item;
 use App\Lib\FlyWeight\ItemFactory;
+use App\Lib\Interpreter\Context;
+use App\Lib\Interpreter\JobCommand;
 use App\Lib\Iterator\Employee;
 use App\Lib\Iterator\Employees;
 use App\Lib\Iterator\SalesmanIterator;
@@ -372,6 +374,21 @@ class DsptsController extends AppController
             echo '<dd>\\' . number_format((int)$object->getPrice()) . '-</dd>';
         }
         echo '</dl>';
+        exit;
+    }
+
+    public function interpreter()
+    {
+        $command = 'begin date line date line date line diskspace end';
+        if ($command !== '') {
+            $job = new JobCommand();
+            try {
+                $job->execute(new Context($command));
+            } catch (\Exception $e) {
+                echo htmlspecialchars($e->getMessage(), ENT_QUOTES, mb_internal_encoding());
+            }
+            echo '<hr>';
+        }
         exit;
     }
 }
