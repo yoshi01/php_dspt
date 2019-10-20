@@ -15,6 +15,11 @@ use App\Lib\ChainOfRepository\AlphabetValidationHandler;
 use App\Lib\ChainOfRepository\MaxLengthValidationHandler;
 use App\Lib\ChainOfRepository\NotNullValidationHandler;
 use App\Lib\ChainOfRepository\NumberValidationHandler;
+use App\Lib\Command\CompressCommand;
+use App\Lib\Command\CopyCommand;
+use App\Lib\Command\File;
+use App\Lib\Command\Queue;
+use App\Lib\Command\TouchCommand;
 use App\Lib\Facade\ItemDao;
 use App\Lib\Facade\Order;
 use App\Lib\Facade\OrderItem;
@@ -270,6 +275,18 @@ class DsptsController extends AppController
         } else {
             echo '<p style="color: #008800;">OK</p>';
         }
+        exit;
+    }
+
+    public function command()
+    {
+        $q = new Queue();
+        $file = new File('sample.txt');
+        $q->addCommand(new TouchCommand($file));
+        $q->addCommand(new CompressCommand($file));
+        $q->addCommand(new CopyCommand($file));
+
+        $q->run();
         exit;
     }
 }
