@@ -49,6 +49,9 @@ use App\Lib\Proxy\DbItemDao;
 use App\Lib\Proxy\ItemDaoProxy;
 use App\Lib\Proxy\MockItemDao;
 use App\Lib\Singleton\SingletonSample;
+use App\Lib\Strategy\ItemDataContext;
+use App\Lib\Strategy\ReadFixedLengthDataStrategy;
+use App\Lib\Strategy\ReadTabSeparatedDataStrategy;
 use App\Lib\Template\ListDisplay;
 use App\Lib\Template\TableDisplay;
 use App\Lib\Composite\Employee as Emp;
@@ -614,5 +617,34 @@ class DsptsController extends AppController
         echo '現在のカウント：' . $context->getCount() . '<br>';
         echo $context->getMenu() . '<br>';
         exit;
+    }
+
+    public function strategy()
+    {
+        $strategy1 = new ReadFixedLengthDataStrategy(APP . 'Lib/Strategy/fixed_length_data.txt');
+        $context1 = new ItemDataContext($strategy1);
+        $this->dumpData($context1->getItemData());
+
+        echo '<hr>';
+
+        /**
+         * タブ区切りデータを読み込む
+         */
+        $strategy2 = new ReadTabSeparatedDataStrategy(APP . 'Lib/Strategy/tab_separated_data.txt');
+        $context2 = new ItemDataContext($strategy2);
+        $this->dumpData($context2->getItemData());
+        exit;
+    }
+
+    private function dumpData($data)
+    {
+        echo '<dl>';
+        foreach ($data as $object) {
+            echo '<dt>' . $object->item_name . '</dt>';
+            echo '<dd>商品番号：' . $object->item_code . '</dd>';
+            echo '<dd>\\' . number_format($object->price) . '-</dd>';
+            echo '<dd>' . date('Y/m/d', $object->release_date) . '発売</dd>';
+        }
+        echo '</dl>';
     }
 }
