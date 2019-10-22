@@ -56,6 +56,8 @@ use App\Lib\Template\ListDisplay;
 use App\Lib\Template\TableDisplay;
 use App\Lib\Composite\Employee as Emp;
 use App\Lib\Composite\Group;
+use App\Lib\Visitor\CountVisitor;
+use App\Lib\Visitor\DumpVisitor;
 use Cake\Event\Event;
 
 /**
@@ -646,5 +648,43 @@ class DsptsController extends AppController
             echo '<dd>' . date('Y/m/d', $object->release_date) . '発売</dd>';
         }
         echo '</dl>';
+    }
+
+    public function visitor()
+    {
+        $root_entry = new \App\Lib\Visitor\Group("001", "本社");
+        $root_entry->add(new \App\Lib\Visitor\Employee("00101", "CEO"));
+        $root_entry->add(new \App\Lib\Visitor\Employee("00102", "CTO"));
+
+        $group1 = new \App\Lib\Visitor\Group("010", "○○支店");
+        $group1->add(new \App\Lib\Visitor\Employee("01001", "支店長"));
+        $group1->add(new \App\Lib\Visitor\Employee("01002", "佐々木"));
+        $group1->add(new \App\Lib\Visitor\Employee("01003", "鈴木"));
+        $group1->add(new \App\Lib\Visitor\Employee("01003", "吉田"));
+
+        $group2 = new \App\Lib\Visitor\Group("110", "△△営業所");
+        $group2->add(new \App\Lib\Visitor\Employee("11001", "川村"));
+        $group1->add($group2);
+        $root_entry->add($group1);
+
+        $group3 = new \App\Lib\Visitor\Group("020", "××支店");
+        $group3->add(new \App\Lib\Visitor\Employee("02001", "萩原"));
+        $group3->add(new \App\Lib\Visitor\Employee("02002", "田島"));
+        $group3->add(new \App\Lib\Visitor\Employee("02002", "白井"));
+        $root_entry->add($group3);
+
+        /**
+         * 木構造をダンプ
+         */
+        $root_entry->accept(new DumpVisitor());
+
+        /**
+         * 同じ木構造に対して、別のVisitorを使用する
+         */
+        $visitor = new CountVisitor();
+        $root_entry->accept($visitor);
+        echo '組織数：' . $visitor->getGroupCount() . '<br>';
+        echo '社員数：' . $visitor->getEmployeeCount() . '<br>';
+        exit;
     }
 }
