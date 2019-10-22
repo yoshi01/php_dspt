@@ -45,6 +45,9 @@ use App\Lib\Observer\PresentListener;
 use App\Lib\Prototype\DeepCopyItem;
 use App\Lib\Prototype\ItemManager;
 use App\Lib\Prototype\ShallowCopyItem;
+use App\Lib\Proxy\DbItemDao;
+use App\Lib\Proxy\ItemDaoProxy;
+use App\Lib\Proxy\MockItemDao;
 use App\Lib\Singleton\SingletonSample;
 use App\Lib\Template\ListDisplay;
 use App\Lib\Template\TableDisplay;
@@ -545,5 +548,37 @@ class DsptsController extends AppController
         echo '■コピー';
         $item2->dumpData();
         echo '<hr>';
+    }
+
+    public function proxy($dao = null, $proxy = null)
+    {
+        if (isset($dao) && isset($proxy)) {
+            switch ($dao) {
+                case 1:
+                    $dao = new MockItemDao();
+                    break;
+                default:
+                    $dao = new DbItemDao();
+                    break;
+            }
+
+            switch ($proxy) {
+                case 1:
+                    $dao = new ItemDaoProxy($dao);
+                    break;
+            }
+
+            for ($item_id = 1; $item_id <= 3; $item_id++) {
+                $item = $dao->findById($item_id);
+                echo 'ID=' . $item_id . 'の商品は「' . $item->getName() . '」です<br>';
+            }
+
+            /**
+             * 再度データを取得
+             */
+            $item = $dao->findById(2);
+            echo 'ID=' . $item_id . 'の商品は「' . $item->getName() . '」です<br>';
+        }
+        exit;
     }
 }
